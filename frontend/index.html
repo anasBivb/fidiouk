@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>فيديوك — صانع الفيديو الذكي</title>
+  <style>
+    :root{--bg:#05060a;--card:#0f1720;--accent:#7c3aed;--text:#eff6ff;--muted:#94a3b8}
+    body{background:linear-gradient(180deg,#05060a,#071224);color:var(--text);font-family:Inter, system-ui; margin:0;padding:20px}
+    .container{max-width:980px;margin:0 auto;display:grid;grid-template-columns:1fr 320px;gap:18px}
+    .card{background:linear-gradient(180deg,var(--card),#071122);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .logo{font-weight:800;background:linear-gradient(90deg,var(--accent),#5b21b6);padding:10px 12px;border-radius:10px}
+    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:rgba(255,255,255,0.02);color:var(--text)}
+    button{padding:10px 12px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),#5b21b6);cursor:pointer;color:white;font-weight:700}
+    .muted{color:var(--muted);font-size:13px}
+    .small{font-size:13px;color:var(--muted)}
+    .sidebar{display:flex;flex-direction:column;gap:12px}
+    .progress{height:10px;background:rgba(255,255,255,0.03);border-radius:8px;overflow:hidden}
+    .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#7c3aed)}
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div class="logo">فيديوك</div>
+      <div>
+        <div style="font-weight:700">فيديوك — صانع الفيديو الذكي</div>
+        <div class="muted">حوّل النص إلى فيديو عربي بسهولة</div>
+      </div>
+    </div>
+    <div>
+      <button id="btnAuth">تسجيل</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <div class="card">
+        <h2>إنشاء فيديو جديد</h2>
+        <div class="small">ادخل النص ثم اختر النمط والصوت واضغط إنشاء</div>
+        <div style="height:10px"></div>
+
+        <label>النص (موجز أو سكربت)</label>
+        <textarea id="txt" placeholder="اكتب نص الإعلان أو السكربت هنا..." rows="6"></textarea>
+
+        <div style="display:flex;gap:10px;margin-top:10px">
+          <div style="flex:1">
+            <label>النمط</label>
+            <select id="style">
+              <option value="advert">إعلاني</option>
+              <option value="story">قصصي</option>
+              <option value="educational">تعليمي</option>
+            </select>
+          </div>
+          <div style="width:170px">
+            <label>الصوت (لهجة)</label>
+            <select id="voice">
+              <option value="arabic_fusha">فصحى (نبرة رسمية)</option>
+              <option value="arabic_egypt">مصرية (ودية)</option>
+              <option value="arabic_levant">شامية / لبنانية</option>
+              <option value="arabic_gulf">خليجية</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button id="generate">إنشاء الفيديو</button>
+          <div id="status" class="muted">رصيد مجاني: <span id="credits">5</span></div>
+        </div>
+
+        <div style="height:12px"></div>
+        <div class="progress"><i id="prog"></i></div>
+        <div id="result" style="margin-top:12px"></div>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:700" id="userEmail">غير مسجل</div>
+            <div class="muted" id="userCredits">رصيد: 0</div>
+          </div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="small">مسودات</div>
+        <div id="drafts" class="muted">لا توجد مسودات</div>
+      </div>
+
+      <div class="card">
+        <div class="small">نصائح سريعة</div>
+        <ul style="color:var(--muted)">
+          <li>كن مختصرًا وواضحاً للحصول على فيديو أسرع.</li>
+          <li>اختر النمط المناسب (إعلاني / قصصي / تعليمي).</li>
+          <li>خمس فيديوهات مجانية لكل مستخدم عند التسجيل.</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <!-- simple auth modal -->
+  <div id="modal" style="display:none;position:fixed;inset:0;background:rgba(2,6,23,0.6);align-items:center;justify-content:center;padding:20px">
+    <div style="max-width:420px;background:#081026;padding:18px;border-radius:10px">
+      <h3 style="margin:0 0 8px 0">تسجيل / تسجيل دخول</h3>
+      <input id="email" placeholder="الايميل" style="width:100%;padding:10px;border-radius:8px;margin-bottom:8px"/>
+      <div style="display:flex;gap:8px">
+        <button id="doSignup">سجّل</button>
+        <button id="doLogin" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">دخول</button>
+        <button id="closeModal" style="background:transparent;border:1px dashed rgba(255,255,255,0.06)">إغلاق</button>
+      </div>
+      <div class="small muted" style="margin-top:8px">أو: <button id="googleBtn" style="display:inline-block;margin-top:8px;padding:6px 10px;border-radius:8px">تسجيل بحساب Google</button></div>
+    </div>
+  </div>
+
+  <script>
+    const API = (window.location.hostname === 'localhost') ? 'http://localhost:4000' : '';
+    let currentUser = null; const FREE_CREDITS = 5;
+    const btnAuth = document.getElementById('btnAuth');
+    const modal = document.getElementById('modal');
+    const closeModal = document.getElementById('closeModal');
+    const doSignup = document.getElementById('doSignup');
+    const doLogin = document.getElementById('doLogin');
+    const emailInput = document.getElementById('email');
+    const userEmail = document.getElementById('userEmail');
+    const userCredits = document.getElementById('userCredits');
+    const creditsEl = document.getElementById('credits');
+    const generateBtn = document.getElementById('generate');
+    const txt = document.getElementById('txt');
+    const styleSel = document.getElementById('style');
+    const voiceSel = document.getElementById('voice');
+    const prog = document.getElementById('prog');
+    const result = document.getElementById('result');
+    const googleBtn = document.getElementById('googleBtn');
+
+    function showModal(){ modal.style.display='flex' }
+    function hideModal(){ modal.style.display='none' }
+
+    btnAuth.addEventListener('click', ()=> { if(currentUser){ currentUser=null; localStorage.removeItem('fk_user'); updateUserUI(); return } showModal(); })
+    closeModal.addEventListener('click', hideModal);
+
+    googleBtn.addEventListener('click', ()=> {
+      // redirect to backend google auth
+      window.location.href = (API || '') + '/auth/google';
+    });
+
+    async function apiPost(path, body){
+      const r = await fetch((API || '') + path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      return r.json();
+    }
+
+    doSignup.addEventListener('click', async ()=>{ const email = emailInput.value.trim(); if(!email) return alert('ضع ايميل صالح'); const res = await apiPost('/api/signup',{email}); if(res.ok){ currentUser=res.user; localStorage.setItem('fk_user', JSON.stringify(currentUser)); hideModal(); updateUserUI(); } else alert('خطأ'); });
+    doLogin.addEventListener('click', async ()=>{ const email = emailInput.value.trim(); if(!email) return alert('ضع ايميل صالح'); const res = await apiPost('/api/login',{email}); if(res.ok){ currentUser=res.user; localStorage.setItem('fk_user', JSON.stringify(currentUser)); hideModal(); updateUserUI(); } else alert('المستخدم غير موجود'); });
+
+    function updateUserUI(){ currentUser = JSON.parse(localStorage.getItem('fk_user')||'null'); if(currentUser){ userEmail.innerText = currentUser.email; userCredits.innerText = 'رصيد: ' + (currentUser.credits || FREE_CREDITS); creditsEl.innerText = (currentUser.credits||FREE_CREDITS); btnAuth.innerText = 'تسجيل خروج'; } else { userEmail.innerText = 'غير مسجل'; userCredits.innerText = ''; creditsEl.innerText = FREE_CREDITS; btnAuth.innerText = 'تسجيل'; } }
+
+    async function setProgress(p){ prog.style.width = Math.max(0, Math.min(100, p)) + '%'; }
+
+    generateBtn.addEventListener('click', async ()=>{
+      if(!currentUser) return showModal(); const text = txt.value.trim(); if(!text) return alert('أدخل النص'); generateBtn.disabled = true; setProgress(10); result.innerHTML = 'جاري الإنشاء — انتظر قليلاً...';
+      try{
+        const payload = { email: currentUser.email, text, style: styleSel.value, voice: voiceSel.value };
+        setProgress(25);
+        const res = await apiPost('/api/generate', payload);
+        setProgress(70);
+        if(res.ok){ const videoUrl = res.file; result.innerHTML = `<div>تم إنشاء الفيديو 🎉</div><div style="margin-top:8px"><a href="${(API||'') + videoUrl}" target="_blank" style="color:#9ae6b4">تحميل الفيديو</a></div>`; currentUser.credits = res.credits; localStorage.setItem('fk_user', JSON.stringify(currentUser)); updateUserUI(); setProgress(100); }
+        else if(res.error === 'no_credits'){ result.innerHTML = `<div>انتهى رصيدك المجاني. الرجاء الاشتراك لمتابعة الاستخدام.</div>`; }
+        else { result.innerText = 'حدث خطأ: ' + (res.error || JSON.stringify(res)); }
+      } catch(err){ console.error(err); result.innerText = 'فشل في إنشاء الفيديو: ' + err.message; }
+      finally{ generateBtn.disabled = false; setTimeout(()=> setProgress(0), 800); }
+    });
+
+    updateUserUI();
+  </script>
+</body>
+</html>
